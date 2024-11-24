@@ -1,50 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="main/css/alert.css">
+    <meta charset="UTF-8" />
+    <title>Fileo</title>
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/alert.css">
+
+    <link rel="icon" type="image/x-icon" href="main/favicon.png" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="title" content="Fileo - Send File Anywhere" />
+    <meta name="description"
+        content="Fileo allows you to easily upload, share, and send files securely anywhere in the world. Whether you're sharing images, documents, or other file types, Fileo provides a simple and safe solution for all your file transfer needs." />
+
+    <meta name="keywords"
+        content="Fileo, fileo, send file online, file upload, send files securely, file sharing, file transfer, upload files, email file sharing, secure file upload, transfer documents, share photos, upload images, send documents, file sharing service, cloud storage, online file transfer">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="revisit-after" content="1 days" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="Content-Language" content="en" />
+    <meta property="og:title" content="Fileo - Send File Anywhere" />
+    <meta property="og:description"
+        content="Fileo allows you to easily upload, share, and send files securely anywhere in the world. Whether you're sharing images, documents, or other file types, Fileo provides a simple and safe solution for all your file transfer needs." />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Fileo" />
+    <meta property="og:url" content="https://fi-leo.netlify.app/" />
+    <meta itemprop="image" content="https://i.postimg.cc/HYBH8NzR/Screenshot-2024-11-25-000842.png" />
+    <meta property="og:image" content="https://i.postimg.cc/HYBH8NzR/Screenshot-2024-11-25-000842.png" />
+    <meta property="og:image:secure_url" content="https://i.postimg.cc/HYBH8NzR/Screenshot-2024-11-25-000842.png" />
+    <meta property="og:image:width" content="650" />
+    <meta property="og:image:height" content="350" />
+    <meta property="twitter:title" content="Fileo - Send File Anywhere" />
+    <meta property="twitter:description"
+        content="Fileo allows you to easily upload, share, and send files securely anywhere in the world. Whether you're sharing images, documents, or other file types, Fileo provides a simple and safe solution for all your file transfer needs." />
+    <meta property="twitter:url" content="" />
+    <meta property="twitter:card" content="summary" />
+    <meta name="apple-mobile-web-app-status-bar" content="#202125" />
 </head>
+
 <body>
     <div class="container">
-        <div class="card">
-            <div class="card-content login">
-                <h1>Welcome back</h1>
-                <p class="subtitle">Enter your credentials to access your account</p>
-
-                <form class="form">
-                    <div class="input-group">
-                        <label for="login-email">Email</label>
-                        <div class="input-field">
-                            <span class="icon">📧</span>
-                            <input type="email" id="email" placeholder="you@example.com" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="login-password">Password</label>
-                        <div class="input-field">
-                            <span class="icon">🔒</span>
-                            <input type="password" id="password" placeholder="••••••••" required>
-                        </div>
-                    </div>
-
-                    <div class="forgot-password">
-                        <a href="#">Forgot password?</a>
-                    </div>
-
-                    <button type="submit" id="btn" class="submit-btn">
-                        Sign in
-                        <span class="arrow">→</span>
-                    </button>
-                </form>
-
-                <div class="toggle-text">
-                    <label for="toggle">Don't have an account? <a href="registration.html">Sign up</a></label>
-                </div>
+        <div class="upload-area" id="dropZone">
+            <div class="upload-content">
+                <div class="upload-icon">⬆️</div>
+                <h2>Drag and drop your files here</h2>
+                <p>Files supported: JPG, PNG, GIF , MATLAB , PDF</p>
+                <p class="or">or</p>
+                <button class="browse-btn">Browse files</button>
+                <input type="file" hidden id="fileInput" required />
             </div>
+        </div>
+        <div class="email-input-section">
+            <label for="email">Enter recipient's email address:</label>
+            <input type="email" id="emailInput" placeholder="Recipient's email" required />
+        </div>
+        <div class="files-list">
+            <h3>Files</h3>
+            <div id="filesList"></div>
+        </div>
+        <div class="files-list">
+            <button type="button" class="browse-btn" id="btn">Upload</button>
         </div>
     </div>
     <!-- Custom Alert UI -->
@@ -55,37 +74,74 @@
             <button id="closeAlert" class="close-btn">Close</button>
         </div>
     </div>
-    <script src="main/js/alert.js"></script>
+    <div id="loading-bar" class="loading-bar">
+        <div id="progress" class="progress"></div>
+    </div>
+
+    <script type="module" src="js/upload.js"></script>
+    <script src="js/alert.js"></script>
+    <script src="js/main.js"></script>
     <script>
+
         document.querySelector('#btn').addEventListener('click', async (event) => {
-          event.preventDefault();
+            event.preventDefault();
 
-          const email = document.getElementById('email').value;
-          const password = document.getElementById('password').value;
+            const formdata = new FormData();
+            const file = document.getElementById('fileInput').files[0];
+            const email = document.getElementById('emailInput').value;
 
-          try {
-            const response = await fetch('https://fileo-backend.onrender.com/', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email, password }),
-            });
+            if (!file) {
+                console.log('No file found');
+            } else {
+                console.log('File found', file);
+                console.log('File size (in bytes):', file.size);  // Log the file size
+            }
 
-            const result = await response.json();
+            formdata.append('file', file);
+            formdata.append('email', email);
 
-            if (result.token) {
-                    localStorage.setItem('authtoken', result.token);
-                    window.location.href = 'main/main.html';
+            const loadingBar = document.getElementById('loading-bar');
+            const progress = document.getElementById('progress');
+            loadingBar.style.display = 'block';
 
-                } else {
-                    showAlert('Incorrect Username or password');
-                }
+            try {
 
-          } catch (err) {
-            console.error('Error:', err);
-            showAlert('Error Signing In');
-          }
+                let progressValue = 0;
+                const interval = setInterval(() => {
+                    if (progressValue < 90) {
+                        progressValue += 10; // Simulate progress increase
+                        progress.style.width = progressValue + '%';
+                    }
+                }, 500);
+                const response = await fetch('http://localhost:3000/upload', {
+                    method: 'POST',
+
+                    body: formdata,
+                });
+                const result = await response.json();
+
+                clearInterval(interval);
+                progress.style.width = '100%';
+
+                setTimeout(() => {
+                    loadingBar.style.display = 'none';
+                }, 500);
+
+                showAlert(result.message);
+
+            } catch (err) {
+                console.error('Error: ', err);
+
+                clearInterval(interval);
+                progress.style.width = '100%';
+                setTimeout(() => {
+                    loadingBar.style.display = 'none';
+                }, 500);
+                showAlert('Error uploading file!');
+            }
         });
-      </script>
 
+    </script>
 </body>
+
 </html>
